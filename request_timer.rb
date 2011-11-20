@@ -1,58 +1,72 @@
+$: << File.dirname(__FILE__)
+
 require 'net/http'
 require 'net/https'
-require 'data_mapper'
+require 'request_db'
+require 'charts'
 
-class Result
-  include DataMapper::Resource
-  property :id, Serial
-  property :start_time, DateTime
-  property :duration, Float
-  property :code, Integer
-end
+module SiteMonitor
+  extend self
 
+  BREAK_IN_SECONDS = 30
+  HOST = 'registry.nic.fm'
+  PATH = '/login.jsp'
+  OPTS = {:use_ssl => true, :verify_mode => OpenSSL::SSL::VERIFY_NONE}
 
-BREAK_IN_SECONDS = 30
-HOST = 'registry.nic.fm'
-PATH = '/login.jsp'
-OPTS = {:use_ssl => true, :verify_mode => OpenSSL::SSL::VERIFY_NONE}
+  def timeit
+    start = Time.now
+    yield
+    [start, Time.now - start]
+  end
 
-def timeit
-  start = Time.now
-  yield
-  [start, Time.now - start]
-end
+  def measure_once
+    resp = nil
+    length = timeit do  
 
-def db_file
-  "sqlite://#{File.expand_path( File.dirname(__FILE__) )}/db/request_timer.db"
-end
+      resp = Net::HTTP.start(HOST,443,nil,nil,nil,nil,OPTS) do |conn|
+        conn.get2(PATH)
+      end
 
-def setup
-  puts "Using db file: #{db_file}"
-  DataMapper.setup(:default, db_file)
-  DataMapper.finalize
-  DataMapper.auto_upgrade!
-end
-
-def measure_once
-  resp = nil
-  length = timeit do  
-
-    resp = Net::HTTP.start(HOST,443,nil,nil,nil,nil,OPTS) do |conn|
-      conn.get2(PATH)
     end
 
-  end
-  
-  Result.create(
+    DB::Result.create(
     :start_time => length[0],
     :duration => length[1],
     :code => resp.code 
-  )
+    )
+  end
+
+  def results_to_data_array results
+    index = 0
+    results.collect do |single|
+      index += 1
+      {:x => index, :y => single.duration * 1000}
+    end
+  end
+
+  def monitor_site
+    while true
+      measure_once
+      sleep BREAK_IN_SECONDS
+    end
+  end
+
+  def chart_history
+    Chart.chart(
+    results_to_data_array(DB::Result.all),
+    'history.png'
+    )
+  end
+
+  DB.setup
+
 end
 
-setup
-
-while true
-  measure_once
-  sleep BREAK_IN_SECONDS
+case ARGV.shift
+when 'm'
+  SiteMonitor.monitor_site
+when 'h'
+  SiteMonitor.chart_history
+else
 end
+
