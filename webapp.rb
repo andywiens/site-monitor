@@ -11,9 +11,11 @@ end
 
 #create a display showing interactive charts for the last 3 days, 6 hours at a time
 # work backwards from the current time
-get '/' do
+
+get '/:back_num' do
   six_hours = 6 * 3600
-  now = Time.now
+  @curr_page = params[:back_num].to_i
+  now = Time.now - (3600 * 24 * @curr_page)
   
   @charts = []
   6.times do |num|
@@ -29,6 +31,12 @@ get '/' do
   
   erb :graph
 end
+
+get '/' do
+  call! env.merge("PATH_INFO" => '/0')
+end
+
+
 
 
 

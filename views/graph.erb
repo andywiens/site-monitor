@@ -24,16 +24,16 @@
                  spacingTop: 100
               },
                title: {
-                 text: 'starting: <%=chart.start_time.to_s%>'
+                 text: '' //'starting: <%=chart.start_time.to_s%>'
               },
                subtitle: {
-                 text: 'select plot area to zoom in'
+                 text: '' //'select plot area to zoom in'
               },
               xAxis: {
                  type: 'datetime',
                  dateTimeLabelFormats: {
-                     hour: '%H:%M',
-                     minute: '%H:%M'
+                     hour: '%H:%M <br/> (%m/%e)',
+                     minute: '%H:%M <br/> (%m/%e)'
                  },
                  maxZoom: 1 * 3600 * 1000, //  1 hour
                  title: {
@@ -50,7 +50,15 @@
                  showFirstLabel: false
               },
               tooltip: {
-                 shared: true               
+                 shared: true,
+                 formatter: function(){
+                     d = new Date(this.x);
+                     s = d.getSeconds() >= 10 ? d.getSeconds() : '0' + d.getSeconds();
+                     return 'time: ' +
+                     // this.x.format("HH:MM:ss") + 
+                     d.getHours() + ':' + d.getMinutes() + ':' + s + '<br/>' +
+                     'latency: ' + new Number(this.points[0].y).toFixed(0) + ' ms';
+                 }              
               },
               legend: {
                  enabled: false
@@ -98,10 +106,11 @@
         </script>
     </head>
     <body>
-        <h1>Response Times for registry.nic.fm/login.jsp</h1>
-        
-        
-        
+        <h1 style="text-align: center;">Response Times</h1>
+        <a href="<%=url(@curr_page + 1)%>">prev</a> 
+        <% if @curr_page > 0 %>
+        &nbsp;|&nbsp;<a href="<%=url(@curr_page - 1)%>">next</a>
+        <% end %>
         <% @charts.size.times do |cnum| %>
         
         
