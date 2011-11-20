@@ -11,11 +11,17 @@
         
         var chart_<%=cnum%>;
         $(document).ready(function() {
+            Highcharts.setOptions({
+                global: {
+                    useUTC: false
+                }
+            });
            chart_<%=cnum%> = new Highcharts.Chart({
               chart: {
                  renderTo: 'container_<%=cnum%>',
                  zoomType: 'x',
-                 spacingRight: 20
+                 spacingRight: 20,
+                 spacingTop: 100
               },
                title: {
                  text: 'starting: <%=chart.start_time.to_s%>'
@@ -25,6 +31,10 @@
               },
               xAxis: {
                  type: 'datetime',
+                 dateTimeLabelFormats: {
+                     hour: '%H:%M',
+                     minute: '%H:%M'
+                 },
                  maxZoom: 1 * 3600 * 1000, //  1 hour
                  title: {
                     text: null
@@ -34,7 +44,8 @@
                  title: {
                     text: 'time in ms'
                  },
-                 min: 0.6,
+                 min: 300,
+                 max: 1000, 
                  startOnTick: false,
                  showFirstLabel: false
               },
