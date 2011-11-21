@@ -20,8 +20,8 @@ get '/:back_num' do
   @charts = []
   6.times do |num|
     c = Chart.new
-    c.start_time = now - (num + 1) * six_hours
-    c.end_time = now - num * six_hours
+    c.start_time = now - ((num + 1) * six_hours)
+    c.end_time = now - (num * six_hours)
     results = SiteMonitor::DB::Result.all(:start_time.gt => c.start_time,
       :start_time.lte => c.end_time, :order => [:start_time.asc])
     
@@ -40,7 +40,8 @@ end
 
 class Chart
   attr_accessor :start_time, :interval, :data_in_results, :end_time
-
+  TIME_WINDOW = 15 # in seconds
+  
   def initialize
     @interval = 30000 # 30 seconds
   end
@@ -49,16 +50,24 @@ class Chart
     time_index = @start_time.to_time
     points = []
     @data_in_results.each do |result|
-      while time_index < result.start_time.to_time
+      while time_index < (result.start_time.to_time + TIME_WINDOW)
         points << 0
         time_index += (@interval / 1000)
       end
       
-      points << result.duration * 1000
+      points << (result.duration * 1000).truncate
       time_index += (@interval / 1000)
     end
     
     points
+  end
+  
+  def result_to_time_duration_pair_array_strings result
+    "[#{(result.start_time.to_time.utc.to_f * 1000).truncate},#{result.duration * 1000}]"
+  end
+  
+  def data_with_time_to_js_array
+    "[#{@data_in_results.collect{ |r| result_to_time_duration_pair_array_strings r}.join(',')}]"
   end
   
   def start_time_utc_millis

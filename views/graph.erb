@@ -94,9 +94,9 @@
               series: [{
                  type: 'area',
                  name: 'response times',
-                 pointInterval: <%= chart.interval %>,
-                 pointStart: <%= chart.start_time_utc_millis %>,
-                 data: <%= chart.data_to_js_array %>
+                 //pointInterval: <%= chart.interval %>,
+                 //pointStart: <%= chart.start_time_utc_millis %>,
+                 data: <%= chart.data_with_time_to_js_array %>
               }]
            });
 
