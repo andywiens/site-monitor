@@ -9,7 +9,7 @@ helpers do
   
 end
 
-#create a display showing interactive charts for the last 3 days, 6 hours at a time
+#create a display showing interactive charts, 6 hours at a time
 # work backwards from the current time
 
 get '/:back_num' do
@@ -40,26 +40,9 @@ end
 
 class Chart
   attr_accessor :start_time, :interval, :data_in_results, :end_time
-  TIME_WINDOW = 15 # in seconds
   
   def initialize
     @interval = 30000 # 30 seconds
-  end
-  
-  def data_points_without_gaps
-    time_index = @start_time.to_time
-    points = []
-    @data_in_results.each do |result|
-      while time_index < (result.start_time.to_time + TIME_WINDOW)
-        points << 0
-        time_index += (@interval / 1000)
-      end
-      
-      points << (result.duration * 1000).truncate
-      time_index += (@interval / 1000)
-    end
-    
-    points
   end
   
   def result_to_time_duration_pair_array_strings result
@@ -73,8 +56,5 @@ class Chart
   def start_time_utc_millis
     (@start_time.to_time.utc.to_f * 1000).truncate
   end
-  
-  def data_to_js_array
-    "[#{data_points_without_gaps.join(',')}]"
-  end
+ 
 end

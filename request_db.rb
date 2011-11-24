@@ -14,11 +14,11 @@ module SiteMonitor
       property :code, Integer
     end
 
-    def self.db_file
+    def db_file
       "sqlite://#{File.expand_path( File.dirname(__FILE__) )}/db/request_timer.db"
     end
 
-    def self.setup
+    def setup
       puts "Using db file: #{db_file}"
       DataMapper.setup(:default, db_file)
       DataMapper.finalize
