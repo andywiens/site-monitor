@@ -16,3 +16,5 @@ technical_graph
 thin (optional, but is better for sinatra)
 
 The domain and a few other options can be set via constants in request_timer.rb. 
+
+You may need to create a db directory
